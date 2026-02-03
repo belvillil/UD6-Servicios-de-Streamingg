@@ -508,5 +508,31 @@ La red no puede soportar la carga total.
 
 #CONVERSIONES:
 1 Gbps = 1000 Mbps.
+1 MB = 1024² bytes
+Bitrate: 1 Mbps = 1 megabit por segundo = 1,000,000 bits/s
+1 megabit por segundo=1,000,000 bits/s
+128 kbps (kilobits por segundo) equivale a \(128/8=16\) KB/s (kilobytes por segundo).
 
 
+De unidad...	A unidad...	Operación
+Bytes (B)	bits (b)	Multiplicar por 8
+bits (b)	Bytes (B)	Dividir entre 8
+Megabits (Mb)	Kilobits (kb)	Multiplicar por 1,000 (o 1,024*)
+Gigabytes (GB)	Megabytes (MB)	Multiplicar por 1,000 (o 1,024*)
+
+Resolución,Nombre Común,Dimensiones (píxeles),Total de Píxeles por Frame
+SD,Standard Definition,640×480,"307,200 px"
+HD,High Definition,1280×720,"921,600 px"
+Full HD,1080p,1920×1080,"2,073,600 px"
+4K,Ultra HD,3840×2160,"8,294,400 px"
+
+
+pps = Ancho \times Alto \times FPS (Fotogramas\,por\,segundo)
+Ratio = Tamaño del video sin comprimir / Tamaño del video comprimido
+
+
+Baja (240p)	300 kbps	~135 MB / hora
+SD (480p)	1 Mbps	~450 MB / hora
+HD (720p)	3 Mbps	~1.35 GB / hora
+Full HD (1080p)	5-6 Mbps	~2.5 GB / hora
+4K (UHD)	25 Mbps	~11 GB / hora
