@@ -38,9 +38,9 @@ tienen suscriptores.
 - Desventaja: Routers bloquean paquetes multicast. Solo viable en redes
 internas. 
 
-### QoS: Jitter, Buffer
+## QoS: Jitter, Buffer
 
-## Jitter (Fluctuación)
+### Jitter (Fluctuación)
 
 Es la variación en el tiempo de llegada de los paquetes.
 
@@ -49,7 +49,7 @@ Es la variación en el tiempo de llegada de los paquetes.
 
 - Si el Jitter es superior al tamaño del buffer, el audio se corta (Buffer Underrun).
 
-## Buffer (Amortiguador)
+### Buffer (Amortiguador)
 
 Es una memoria temporal en el cliente (y en el servidor).
 
@@ -58,7 +58,7 @@ Es una memoria temporal en el cliente (y en el servidor).
 - Efecto: A mayor buffer → Mayor estabilidad → Mayor latencia (retraso).
 
 
-## Burst-on-Connect (Ráfaga de conexión)
+### Burst-on-Connect (Ráfaga de conexión)
 
 Una característica específica de servidores como Icecast.
 
@@ -71,9 +71,9 @@ buffer del cliente casi instantáneamente para que el audio empiece a
 sonar de inmediato (Time-to-first-byte reducido).
 
 
-### Protocolos de Streaming
+## Protocolos de Streaming
 
-## 1. Capa de transporte: TCP vs UDP
+### 1. Capa de transporte: TCP vs UDP
 En TCP si un paquete de audio/vídeo se pierde, el cliente no lo
 reproduce y por tanto el servidor lo reenvía (ACK/NACK).
 La ventaja es evidente: calidad y pasa sin problemas por firewalls, NAT
@@ -85,15 +85,15 @@ En UDP sacrificamos calidad pero latencia mínima.
 TODO AUDIO/VIDEO NO ES UDP
 
 
-## 2. Capa de aplicación (tres modelos):
+### 2. Capa de aplicación (tres modelos):
 
 1. HTTP Legacy (como usa Icecast2 - lo veremos más adelante)
 2. HTTP Adaptativo
 3. Real-time
 
-### Protocolos de Streaming
+## Protocolos de Streaming
 
-## HTTP Legacy (como usa Icecast2 - lo veremos más adelante)
+### HTTP Legacy (como usa Icecast2 - lo veremos más adelante)
 
 ● Protocolo: ICY
 
@@ -104,7 +104,7 @@ que el cliente cierra la conexión.
 
 ● Formato: flujo continuo de bytes (MP3, Ogg, ACC).
 
-## HTTP Adapatitivo
+### HTTP Adapatitivo
 
 ● Protocolos: HLS (HTTP Live Streaming de Apple) - MPEG-DASH.
 
@@ -116,7 +116,7 @@ que el cliente cierra la conexión.
 ● Pro: calidad adaptativa. El servidor envía un Manifest con el que da la opción a
 descargar un chunk de mejor o peor calidad. 
 
-## Real-Time
+### Real-Time
 
 ● RTMP (Real-Time Messaging Protocol): funciona sobre TCP. Está
 obsoleto para usuario final pero se usa para enviar vídeo al servidor
@@ -130,7 +130,7 @@ TCP para control.
 navegador sin plugins (Google Meet, Discord). 
 
 
-### Protocolos de Streaming
+## Protocolos de Streaming
 
 Como hemos visto, la industria utiliza mucho más TCP que UDP. Netflix, HBO, Disney+, etc utilizan HTTP adaptativo. Al ver una película estás descargando pequeños chunks, trozos del vídeo, secuencialmente vía TCP.
 Spotify y Apple Music también usa TCP. 
