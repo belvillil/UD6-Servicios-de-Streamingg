@@ -506,4 +506,7 @@ La red no puede soportar la carga total.
 *Solución recomendada:*
 **Reducir bitrate o usar bitrate adaptativo**, manteniendo la calidad sin saturar la red.
 
+#CONVERSIONES:
+1 Gbps = 1000 Mbps.
+
 
