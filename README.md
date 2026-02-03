@@ -1,1 +1,244 @@
 # UD6-Servicios-de-Streamingg
+#Servicios de streaming
+
+##Qué es?
+
+###Descarga directa vs Streaming
+
+- Descarga Directa: el usuario demanda un fichero con un peso de
+100MB y 10 minutos de duración. Comienza la descarga. Se almacena
+en buffer y comienza la reproducción. El usuario termina la
+reproducción a los 2 minutos. El servidor ha entregado las 100MB.
+
+
+- Streaming: Datos enviados en flujo constante. No hay almacenamiento
+local permanente. Solo se consume el ancho de banda que el cliente ha
+utilizado (2 minutos según el ejemplo anterior). 
+
+
+
+##Topología de red
+
+###Unicast: conexión 1 a 1 (estándar de internet)
+
+- Mecánica: Si hay 100 oyentes, el servidor abre 100 sockets TCP y envía
+la información 100 veces.
+
+- Cálculo de Ancho de Banda: BW(tot) = BW(stream) x N(usuarios)
+
+- Desventaja: Poco escalable.
+
+##Multicast:
+
+- Mecánica: El servidor envía la información a una dirección multicast
+(224.0.0.0 - 239.255.255.255). Routers replican el paquete solo si
+tienen suscriptores.
+
+- Desventaja: Routers bloquean paquetes multicast. Solo viable en redes
+internas. 
+
+###QoS: Jitter, Buffer
+
+##Jitter (Fluctuación)
+
+Es la variación en el tiempo de llegada de los paquetes.
+
+- Ejemplo: El paquete 1 tarda 20ms, el paquete 2 tarda 150ms, el paquete 3 tarda
+20ms.
+
+- Si el Jitter es superior al tamaño del buffer, el audio se corta (Buffer Underrun).
+
+##Buffer (Amortiguador)
+
+Es una memoria temporal en el cliente (y en el servidor).
+
+- Función: Acumular suficientes segundos de audio para absorber el Jitter de la red.
+
+- Efecto: A mayor buffer → Mayor estabilidad → Mayor latencia (retraso).
+
+
+##Burst-on-Connect (Ráfaga de conexión)
+
+Una característica específica de servidores como Icecast.
+
+- Problema: Al conectarse, el oyente tardaría varios segundos en llenar
+su buffer a velocidad normal (1x).
+
+- Solución (Burst): El servidor envía los datos iniciales (ej. 64KB) a la
+máxima velocidad posible que permita la red (ej. 10x), llenando el
+buffer del cliente casi instantáneamente para que el audio empiece a
+sonar de inmediato (Time-to-first-byte reducido).
+
+
+###Protocolos de Streaming
+
+##1. Capa de transporte: TCP vs UDP
+En TCP si un paquete de audio/vídeo se pierde, el cliente no lo
+reproduce y por tanto el servidor lo reenvía (ACK/NACK).
+La ventaja es evidente: calidad y pasa sin problemas por firewalls, NAT
+y proxy al usar puertos estándar.
+La desventaja también es evidente: alta latencia. La retransmisión de
+paquetes introduce retraso.
+En UDP sacrificamos calidad pero latencia mínima. 
+
+TODO AUDIO/VIDEO NO ES UDP
+
+
+##2. Capa de aplicación (tres modelos):
+
+1. HTTP Legacy (como usa Icecast2 - lo veremos más adelante)
+2. HTTP Adaptativo
+3. Real-time
+
+###Protocolos de Streaming
+
+##HTTP Legacy (como usa Icecast2 - lo veremos más adelante)
+
+● Protocolo: ICY
+
+● Mecánica: se abre conexión TCP y el servidor envía flujo de datos sin parar hasta
+que el cliente cierra la conexión.
+
+● Puertos: 80. 443, 8000 (Icecast2)
+
+● Formato: flujo continuo de bytes (MP3, Ogg, ACC).
+
+##HTTP Adapatitivo
+
+● Protocolos: HLS (HTTP Live Streaming de Apple) - MPEG-DASH.
+
+● Mecánica: no es flujo continuo. El servidor trocea el fichero en pequeños trozos
+(chunks) de 2 a 10 segundos.
+
+● Formato: .ts, .m4s.
+
+● Pro: calidad adaptativa. El servidor envía un Manifest con el que da la opción a
+descargar un chunk de mejor o peor calidad. 
+
+##Real-Time
+
+● RTMP (Real-Time Messaging Protocol): funciona sobre TCP. Está
+obsoleto para usuario final pero se usa para enviar vídeo al servidor
+(por ejemplo de OBS a YT/Twitch).
+
+● RTSP (Real-Time Streaming Protocol): usado en cámaras de seguridad
+(CCTV) y sistemas domóticos. Generalmente usa UDP para datos y
+TCP para control.
+
+● WebRTC: para videoconferencia. P2P, cifrado, UDP, funciona en
+navegador sin plugins (Google Meet, Discord). 
+
+
+###Protocolos de Streaming
+
+Como hemos visto, la industria utiliza mucho más TCP que UDP.
+Netflix, HBO, Disney+, etc utilizan HTTP adaptativo. Al ver una película estás
+descargando pequeños chunks, trozos del vídeo, secuencialmente vía TCP.
+Spotify y Apple Music también usa TCP. 
+
+¿Has escuchado una canción alguna vez en
+Spotify en el que pierdas un fragmento? Quizás se pare pero no escucharás algo
+raro como en una videollamada.
+Twitch (del lado del receptor): usa TCP. Por eso hay un delay.
+
+La radio online también es TCP (y vamos a ponerlo en práctica con Icecast2).
+Cuando se necesita interactuar con la otra parte el delay no es admisible y por
+tanto se utiliza UDP. 
+
+##Icecast 2
+
+Icecast2 es un software de servidor de streaming de medios de código
+abierto. En términos sencillos, actúa como una "antena de radio virtual"
+en internet: recibe el audio de una fuente (un locutor o una lista de
+reproducción) y lo distribuye a miles de oyentes simultáneamente.
+Icecast2 NO genera el contenido, solo lo distribuye. Por tanto, necesita
+de un cliente que le entregue contenidos.
+
+- Formatos: OGG / MP3
+
+- Gestión de oyentes
+
+- Puntos de montaje (ej. /radio-asir y /radio-smr)
+
+apt update
+apt install icecast2
+Configura contraseñas (usa la misma para todas las opciones)
+Comprueba que el puerto 8000 esté abierto
+
+##Mixxx
+add-apt-repository ppa:mixxx/mixxx
+apt update
+apt install mixxx
+Configuración de la emisión en vivo:
+
+##Códecs
+
+Son algoritmos que permiten la compresión de los ficheros de
+audio/vídeo. También para la descompresión.
+¿Para qué? Para reducir el trasiego de información sin perder
+calidad.
+Por ejemplo: una canción de 3 minutos en calidad CD sin
+compresión podría pesar unos 32MB. La misma canción en MP3
+(comprimida) pesaría unos 3MB.
+Ejemplos de códecs de audio: MP3, AAC, Vorbis, WAV.
+Ejemplos de códecs de vídeo: H.264, H.265, AV1.
+
+
+##Frecuencia de muestreo: 
+
+el audio es una onda analógica. Para
+digitalizarla hay que muestrearla, algo así como hacerle fotos cada X
+tiempo.
+Estándar: 44,1kHz.
+
+
+##Profundidad de bits:
+
+si la frecuencia de muestreo eran las “fotos”
+que hacíamos a la onda, la profundidad es la calidad de dicha foto.
+Se trata de la cantidad de bits que se transmiten por segundo: a
+mayor cantidad, más calidad.
+Estándar: 16 bit (calidad CD)
+
+##Canales: 
+Número de audios independientes que viajan en el mismo
+stream.
+
+##Códecs con pérdida / sin pérdida
+
+###- Códecs con pérdida: 
+
+reducen peso sacrificando información que
+puede ser imperceptible por el oído humano.
+Al comprimirlo dicha información se pierde y es irrecuperable.
+Ejemplo: MP3.
+
+###- Códecs sin pérdida:
+
+comprime el fichero como lo haría un .zip
+pero sin eliminar información. Al descomprimir el flujo de bits es
+idéntico al original.
+El factor de compresión es menor a los códecs con pérdida.
+Ejemplo: FLAC, WAV. 
+
+###Cálculo de peso
+
+Sin compresión WAV: 3 minutos de canción en estéreo con
+frecuencia de muestreo de 44,1kHz y profundidad de 16 bits.
+P = 44100 x 16 x 2 x 3 x 60 = 254016000/8 =31752000 (aprox
+31,75MB). 
+
+
+#EJERCICIOS;
+Cálculo de peso
+1. Calcula el peso aproximado de un archivo de audio sin compresión
+(WAV) de 5 minutos, con una frecuencia de muestreo de 44,1 kHz, 16
+bits y en estéreo.
+2. Si emitimos un streaming en MP3 a un bitrate constante (CBR) de
+128 kbps, ¿cuánto ancho de banda total consumirá el servidor si tiene
+25 oyentes simultáneos?
+3. Calcula el bitrate de un flujo de audio que utiliza una frecuencia de 48
+kHz, 24 bits de profundidad y un solo canal (mono).
+4. Tienes un servidor con un límite de subida de 10 Mbps. ¿Cuántos
+oyentes a 192 kbps puede soportar teóricamente antes de saturar la
+red?
