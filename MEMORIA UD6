@@ -1,0 +1,552 @@
+# Descarga directa vs Streaming
+
+## Descarga directa
+
+- El usuario solicita un fichero completo.
+- El archivo se descarga entero, aunque no se vea completo.
+- Se almacena (total o parcialmente) en buffer / almacenamiento local.
+- El servidor envía el 100% del fichero aunque el usuario no termine de verlo.
+
+**Ejemplo**
+
+Archivo de 100 MB / 10 min → el servidor entrega 100 MB aunque el usuario vea solo 2 min.
+
+---
+
+## Streaming
+
+- Los datos se envían como flujo continuo.
+- No hay almacenamiento local permanente.
+- El consumo de ancho de banda depende del tiempo reproducido.
+- El servidor solo envía lo que el usuario consume.
+
+**Ejemplo**
+
+Si el usuario ve 2 min, solo se envían los datos de esos 2 min.
+
+---
+
+## Diferencias clave
+
+| Descarga directa | Streaming |
+|-----------------|-----------|
+| Archivo completo | Flujo de datos |
+| Consume todo el BW | Solo lo reproducido |
+| Guarda archivo | No guarda completo |
+
+---
+
+# Unicast vs Multicast
+
+## Unicast
+
+Comunicación **1 a 1**.
+
+- Cada cliente tiene su propia conexión.
+- Con 100 usuarios → 100 sockets TCP.
+- La información se envía 100 veces.
+
+### Ancho de banda
+
+BW total = BW stream × Nº usuarios
+
+
+### Desventaja
+
+Poco escalable.
+
+---
+
+## Multicast
+
+Comunicación **1 a muchos**.
+
+- Dirección multicast: `224.0.0.0 – 239.255.255.255`
+- Los routers replican paquetes solo si hay suscriptores.
+
+### Ventajas
+
+- Uso eficiente del ancho de banda.
+
+### Desventajas
+
+- Routers suelen bloquear multicast.
+- Solo viable en LAN.
+
+---
+
+### Claves
+
+- Unicast = 1 a 1  
+- Multicast = 1 a muchos  
+- Unicast escala mal  
+- Multicast no funciona en Internet  
+- Multicast usa `224.0.0.0/4`
+
+---
+
+# TCP vs UDP
+
+| TCP | UDP |
+|-----|-----|
+| Orientado a conexión | Sin conexión |
+| Fiable | No fiable |
+| Garantiza orden | No garantiza |
+| ACK y retransmisiones | Sin ACK |
+| Más lento | Más rápido |
+
+### Ejemplos
+
+TCP:
+- HTTP / HTTPS
+- FTP
+- SMTP
+
+UDP:
+- Streaming tiempo real
+- VoIP
+- DNS
+- Videollamadas
+
+### Clave de examen
+
+- Fiabilidad → TCP  
+- Tiempo real → UDP  
+
+---
+
+# Jitter
+
+Variación en el tiempo de llegada de paquetes.
+
+
+---
+
+# Buffer
+
+Memoria temporal.
+
+### Función
+
+Compensar jitter.
+
+### Efectos
+
+- Buffer grande → más estabilidad
+- Buffer grande → más latencia
+- Buffer pequeño → menos latencia
+- Buffer pequeño → más cortes
+
+---
+
+# QoS — Burst-on-Connect
+
+## Problema
+
+Al conectarse, el buffer tarda en llenarse.
+
+---
+
+## Solución
+
+Ráfaga inicial (ej: 64 KB a 10× velocidad).
+
+Resultado:
+
+- Buffer lleno rápido
+- Inicio inmediato
+- Reduce TTFB
+
+### Claves
+
+- Burst-on-Connect = ráfaga inicial
+- Evita retraso
+- Usado en Icecast
+
+---
+
+# Protocolos de Streaming
+
+## 1. Transporte
+
+| TCP | UDP |
+|-----|-----|
+| Fiable | No fiable |
+| Más latencia | Baja latencia |
+| Fácil en firewalls | Puede bloquearse |
+| Calidad alta | Calidad sacrificada |
+
+---
+
+## 2. Aplicación
+
+### HTTP Legacy (Icecast2)
+
+- ICY
+- TCP
+- Flujo continuo
+- Puertos: 80, 443, 8000
+- MP3 / OGG / AAC
+- Radio online
+
+---
+
+### HTTP Adaptativo
+
+- HLS / MPEG-DASH
+- Chunks de 2–10 s
+- Calidad dinámica
+
+Ejemplos:
+
+Netflix, HBO, Disney+, Spotify
+
+---
+
+### Real-Time
+
+- RTMP (OBS → Twitch)
+- RTSP (cámaras)
+- WebRTC (Meet, Discord)
+
+Baja latencia e interacción.
+
+---
+
+## Claves
+
+- TCP → streaming comercial
+- UDP → latencia crítica
+- HTTP adaptativo → chunks
+- Radios → TCP
+- Tiempo real → UDP/TCP
+
+---
+
+# Fórmulas de Audio
+
+## WAV sin compresión
+
+Peso (bits) =
+Frecuencia × Bits × Canales × Duración
+
+
+# EJERCICIOS;
+Cálculo de peso
+###  1. Calcula el peso aproximado de un archivo de audio sin compresión (WAV) de 5 minutos, con una frecuencia de muestreo de 44,1 kHz, 16 bits y en estéreo.
+
+Datos:
+Frecuencia de muestreo: 44.100 Hz
+Profundidad: 16 bits
+Canales: 2 (estéreo)
+Duración: 5 minutos
+Formato: WAV (sin compresión)
+
+*Fórmula Peso (bits)* = frecuencia × bits × canales × segundos
+*Peso (bits)* = frecuencia×bits×canales×segundos
+
+**Cálculo**:
+Pasamos minutos a segundos:
+
+5 × 60 = 300s
+
+**Calculamos el total en bits:**
+
+44.100 × 16 × 2 × 300 = 423.360.000 bits
+
+*Pasamos de bits a bytes (÷8):*
+
+423.360.000/8 = 52.920.000  bytes
+
+Pasamos a MB (aprox):
+
+≈52,9MB
+
+### 2. Si emitimos un streaming en MP3 a un bitrate constante (CBR) de 128 kbps, ¿cuánto ancho de banda total consumirá el servidor si tiene 25 oyentes simultáneos?
+
+*Datos*:
+Bitrate del stream: 128 kbps
+Oyentes: 25
+Tipo de red: Unicast
+
+**Fórmula**
+BWtotal = BWstream x Nusuarios
+
+*Cálculo:*
+
+128 kbps × 25 =3.200 kbps
+
+Pasamos a Mbps:
+
+3.200/1.000 = 3,2 Mbps
+
+*Resultado*
+El servidor consume 3,2 Mbps de subida
+
+
+### 3. Calcula el bitrate de un flujo de audio que utiliza una frecuencia de 48 kHz, 24 bits de profundidad y un solo canal (mono).
+
+*Datos* 
+Frecuencia de muestreo: 48.000 Hz
+Profundidad: 24 bits
+Canales: 1 (mono)
+
+Fórmula del bitrate**
+
+Bitrate = frecuencia × bits × canales
+
+*Cálculo*
+
+48.000 × 24 × 1 = 1.152.000 bps
+48.000×24×1=1.152.000 bps
+
+Pasamos a kbps:
+
+1.152.000/1.000 = 1.152 kbps
+
+*Resultado*
+Bitrate = 1.152 kbps (≈ 1,15 Mbps)
+
+### 4. Tienes un servidor con un límite de subida de 10 Mbps. ¿Cuántos oyentes a 192 kbps puede soportar teóricamente antes de saturar la red?
+
+*Datos*
+- Ancho de banda total: **10 Mbps = 10.000 kbps**
+- Bitrate por oyente: **192 kbps**
+- Topología: **Unicast**
+
+**Fórmula**
+N = BW_total / BW_oyente
+
+*Cálculo*
+10.000 / 192 = 52,08
+
+Solo se pueden tener oyentes completos (no fracciones).
+
+*Resultado*
+Máximo teórico: 52 oyentes
+
+
+
+# Vídeo – Cálculo de peso y streaming
+
+## Cálculo de peso (vídeo sin comprimir)
+
+**Fórmula general:**
+
+Peso = (Ancho × Alto) × Profundidad de color × FPS × Tiempo
+
+### Resoluciones habituales
+- **1080p** → 1920 × 1080  
+- **4K** → 4096 × 2160  
+- **8K** → 7680 × 4320  
+
+### Profundidad de color
+Bits usados para definir el color de cada píxel.  
+Valor habitual: **24 bits (8 + 8 + 8)**
+
+### FPS
+Frames per second (fotogramas por segundo).
+
+---
+
+## Cálculo de peso (vídeo comprimido)
+
+Al utilizar un **códec**, el vídeo ya no se envía píxel a píxel.  
+El códec decide qué información mantiene y cuál elimina.
+
+En ficheros comprimidos, **el dato importante es el bitrate**.
+
+**Fórmula:**
+
+Peso = Bitrate × Tiempo
+
+El **bitrate** es la cantidad de información enviada por segundo.
+
+---
+
+## Vídeo: conceptos generales
+
+La lógica y los conceptos del vídeo son muy similares a los del audio.  
+También existen **protocolos** y **códecs**, pero se introduce el concepto de **contenedor**.
+
+### Contenedor
+Formato de fichero que puede incluir:
+- Pistas de vídeo
+- Pistas de audio
+- Subtítulos
+- Metadatos
+
+**Ejemplos:* MP4, MKV, MOV, OGG
+
+---
+
+# EJERCICIOS RESUELTOS
+
+### Ejercicio 1: La pesadilla del almacenamiento Un estudio de cine graba en RAW (sin comprimir) con una cámara 4K (3840x2160 píxeles), a 60 fps y una profundidad de color de 30 bits (HDR). 
+### ● A. Calcula el bitrate en Gbps (Gigabits por segundo).
+### ● B. ¿Cuánto espacio de disco ocupará una toma de solo 10 segundos?
+### ● C. Si tienes un disco duro de 1 TB, ¿cuántos minutos de este vídeo podrías guardar?
+
+**Ejercicio 1: La pesadilla del almacenamiento**
+
+Un estudio graba en RAW (sin comprimir) con:
+- Resolución: 4K (3840 × 2160)
+- FPS: 60
+- Profundidad de color: 30 bits (HDR)
+
+---
+
+**A. Calcula el bitrate en Gbps**
+
+*Datos:*
+- Ancho = 3840 píxeles  
+- Alto = 2160 píxeles  
+- Profundidad = 30 bits  
+- FPS = 60  
+
+**Fórmula del bitrate:**
+
+Bitrate = Ancho × Alto × Profundidad × FPS
+
+*Cálculo:*
+
+3840 × 2160 = 8.294.400 píxeles  
+8.294.400 × 30 = 248.832.000 bits por frame  
+248.832.000 × 60 = 14.929.920.000 bps  
+
+*Resultado:*
+
+≈14,93 Gbps
+
+---
+
+**B. Espacio ocupado por 10 segundos de vídeo**
+
+*Datos:*
+- Bitrate = 14,93 Gbps
+- Tiempo = 10 s
+
+*Cálculo:*
+
+14,93 Gbps × 10 s = 149,3 Gb  
+
+Pasamos a GB:
+149,3 / 8 ≈ 18,66 GB
+
+*Resultado:*
+
+≈18,7 GB en solo 10 segundos
+
+---
+**C. ¿Cuántos minutos caben en un disco de 1 TB?**
+
+*Datos:*
+- 1 TB ≈ 1000 GB
+- Consumo por segundo:  
+  18,66 GB / 10 s = 1,866 GB/s
+
+*Tiempo total:*
+
+1000 / 1,866 ≈ 536 s  
+
+Pasamos a minutos:
+536 / 60 ≈ *8,9 minutos*
+
+*Resultado:*
+
+≈9 minutos de vídeo
+
+---
+
+### Ejercicio 2: Quieres retransmitir la graduación por YouTube. Tienes una conexión de fibra con 20 Mbps de subida (upload). Quieres emitir en 1080p usando el códec H.264. 
+### ● A. Si configuras un bitrate de 6 Mbps, ¿qué porcentaje de tu línea de subida estás consumiendo?
+### ● B. Si de repente otros 3 alumnos empiezan a emitir sus propias directos a la misma calidad (6 Mbps cada uno), ¿qué pasará con la emisión? Justifica la respuesta técnica (buffering, saturación de red, latencia).
+### ● C. ¿Qué solución técnica aplicarías para que los 4 alumnos puedan emitir simultáneamente sin ampliar la línea de fibra?
+
+**Ejercicio 2: Streaming de una graduación en YouTube**
+
+*Datos:*
+- Subida disponible: 20 Mbps
+- Bitrate por emisión: 6 Mbps
+- Códec: H.264
+- Resolución: 1080p
+
+---
+
+**A. Porcentaje de la línea consumida**
+
+**Fórmula:**
+
+Porcentaje = (Bitrate / BW total) × 100
+
+*Cálculo:*
+
+(6 / 20) × 100 = 30 %
+
+*Resultado:*
+
+Se consume el 30 % de la subida.
+
+---
+
+**B. 4 alumnos emitiendo a 6 Mbps**
+
+*Consumo total:*
+
+6 × 4 = 24 Mbps
+
+Ancho de banda disponible: 20 Mbps
+
+*Resultado técnico:*
+- Saturación de la red
+- Aumento de latencia
+- Buffering continuo
+- Pérdida de paquetes
+- Cortes en la emisión
+
+La red no puede soportar la carga total.
+
+
+**C. Solución técnica**
+
+*Opciones viables:*
+- Reducir el bitrate de cada emisión (ej. 4 Mbps)
+- Usar **bitrate adaptativo**
+- Emitir a un **servidor intermedio** (RTMP → plataforma)
+- Programar emisiones en horarios distintos
+
+*Solución recomendada:*
+**Reducir bitrate o usar bitrate adaptativo**, manteniendo la calidad sin saturar la red.
+
+#CONVERSIONES:
+1 Gbps = 1000 Mbps.
+1 MB = 1024² bytes
+Bitrate: 1 Mbps = 1 megabit por segundo = 1,000,000 bits/s
+1 megabit por segundo=1,000,000 bits/s
+128 kbps (kilobits por segundo) equivale a \(128/8=16\) KB/s (kilobytes por segundo).
+
+
+De unidad...	A unidad...	Operación
+Bytes (B)	bits (b)	Multiplicar por 8
+bits (b)	Bytes (B)	Dividir entre 8
+Megabits (Mb)	Kilobits (kb)	Multiplicar por 1,000 (o 1,024*)
+Gigabytes (GB)	Megabytes (MB)	Multiplicar por 1,000 (o 1,024*)
+
+Resolución,Nombre Común,Dimensiones (píxeles),Total de Píxeles por Frame
+SD,Standard Definition,640×480,"307,200 px"
+HD,High Definition,1280×720,"921,600 px"
+Full HD,1080p,1920×1080,"2,073,600 px"
+4K,Ultra HD,3840×2160,"8,294,400 px"
+
+
+pps = Ancho \times Alto \times FPS (Fotogramas\,por\,segundo)
+Ratio = Tamaño del video sin comprimir / Tamaño del video comprimido
+
+
+Baja (240p)	300 kbps	~135 MB / hora
+SD (480p)	1 Mbps	~450 MB / hora
+HD (720p)	3 Mbps	~1.35 GB / hora
+Full HD (1080p)	5-6 Mbps	~2.5 GB / hora
+4K (UHD)	25 Mbps	~11 GB / hora
+
+
